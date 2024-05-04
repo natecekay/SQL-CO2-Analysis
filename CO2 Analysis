@@ -1,0 +1,149 @@
+CREATE TABLE temperatures (
+	Year numeric,
+	Global_avg_temp DECIMAL(10, 2),
+	Upper_avg_temp DECIMAL(10, 2),
+	Lower_avg_temp DECIMAL(10, 2)
+);
+
+COPY temperatures
+FROM 'C:\Datasets\Emissions\temperatures.csv'
+WITH (FORMAT CSV, HEADER);
+
+
+CREATE TABLE region (
+	Entity varchar(100),
+	Code varchar(100),
+	Year numeric,
+	Co2emissions numeric
+);
+
+COPY region
+FROM 'C:\Datasets\Emissions\region.csv'
+WITH (FORMAT CSV, HEADER);
+
+
+SELECT *
+FROM temperatures
+LIMIT 5;
+
+
+
+SELECT *
+FROM region
+LIMIT 5;
+
+
+
+CREATE TABLE joined_table AS
+SELECT temperatures.year, temperatures.global_avg_temp, region.entity, region, co2emissions
+FROM temperatures, region
+WHERE temperatures.year = region.year;
+
+
+SELECT *
+FROM joined_table
+LIMIT 5;
+
+
+--Show visualization
+SELECT year, AVG(Global_avg_temp) AS global_avg_temp
+FROM joined_table
+GROUP BY year
+ORDER BY year;
+
+--Show visualization
+SELECT year, AVG(co2emissions) AS CO2_Emissions
+FROM joined_table
+GROUP BY year
+ORDER BY year;
+
+--years with highest global avg temperatures
+SELECT year, AVG(Global_avg_temp) AS global_avg_temp
+FROM joined_table
+GROUP BY year
+ORDER BY global_avg_temp DESC
+LIMIT 10;
+
+
+--years with highest co2emissions
+SELECT year, AVG(co2emissions) AS co2emissions
+FROM joined_table
+GROUP BY year
+ORDER BY co2emissions DESC
+LIMIT 10;
+
+--entity with highest average Co2 emissions
+SELECT entity, AVG(co2emissions) AS co2emissions
+FROM joined_table
+GROUP BY entity
+ORDER BY co2emissions DESC
+LIMIT 10;
+
+
+
+
+--visualize with bar graph
+SELECT entity, SUM(co2emissions) AS total_emissions
+FROM joined_table
+GROUP BY entity
+ORDER BY total_emissions DESC
+LIMIT 10;
+
+
+
+SELECT corr(year, co2emissions) AS correlation_coefficient
+FROM joined_table;
+
+SELECT corr(year, global_avg_temp) AS correlation_coefficient
+FROM joined_table;
+
+
+SELECT corr(global_avg_temp, co2emissions) AS correlation_coefficient
+FROM joined_table;
+
+
+--Show visualization Stacked Line Chart
+SELECT year, AVG(Global_avg_temp) AS global_avg_temp
+FROM joined_table
+GROUP BY year
+ORDER BY year;
+
+
+
+
+SELECT year, Global_avg_temp
+FROM joined_table
+WHERE year BETWEEN 1850 AND 1900
+ORDER BY year;
+
+--show bar chart
+SELECT year, AVG(Global_avg_temp) AS avg_temp
+FROM joined_table
+WHERE year BETWEEN 1900 AND 1999
+GROUP BY year
+ORDER BY avg_temp DESC
+LIMIT 10;
+
+--show bar chart
+SELECT year, AVG(Global_avg_temp) AS avg_temp
+FROM joined_table
+WHERE year BETWEEN 2000 AND 2023
+GROUP BY year
+ORDER BY avg_temp DESC
+LIMIT 10;
+
+--show bar chart
+SELECT year, AVG(co2emissions) AS avg_co2emissions
+FROM joined_table
+WHERE year BETWEEN 1900 AND 1999
+GROUP BY year
+ORDER BY avg_co2emissions DESC
+LIMIT 10;
+
+--show bar chart
+SELECT year, AVG(co2emissions) AS avg_co2emissions
+FROM joined_table
+WHERE year BETWEEN 2000 AND 2023
+GROUP BY year
+ORDER BY avg_co2emissions DESC
+LIMIT 10;
